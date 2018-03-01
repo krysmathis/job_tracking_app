@@ -11,9 +11,10 @@ using System;
 namespace JobTrackingApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180301172048_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,119 +78,6 @@ namespace JobTrackingApp.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.Company", b =>
-                {
-                    b.Property<int>("CompanyId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address");
-
-                    b.Property<string>("City");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.Property<string>("Phone");
-
-                    b.Property<bool>("RecruitingCompany");
-
-                    b.Property<string>("State");
-
-                    b.HasKey("CompanyId");
-
-                    b.ToTable("Company");
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.Contact", b =>
-                {
-                    b.Property<int>("ContactId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("CompanyId");
-
-                    b.Property<string>("Email");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(55);
-
-                    b.Property<bool>("IsRecruiter");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(55);
-
-                    b.Property<string>("Notes");
-
-                    b.Property<string>("Phone");
-
-                    b.Property<string>("RecruitingCompanyName");
-
-                    b.Property<string>("TwitterHandle");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("ContactId");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Contact");
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.Job", b =>
-                {
-                    b.Property<int>("JobId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("CompanyId");
-
-                    b.Property<DateTime>("DateApplied");
-
-                    b.Property<string>("Description")
-                        .IsRequired();
-
-                    b.Property<string>("Notes");
-
-                    b.Property<string>("Status");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("JobId");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Job");
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.JobContact", b =>
-                {
-                    b.Property<int>("JobContactId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("ContactId");
-
-                    b.Property<int>("JobId");
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("JobContactId");
-
-                    b.HasIndex("ContactId");
-
-                    b.HasIndex("JobId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("JobContact");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -298,50 +186,6 @@ namespace JobTrackingApp.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.Contact", b =>
-                {
-                    b.HasOne("JobTrackingApp.Models.Company", "Company")
-                        .WithMany("Contacts")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("JobTrackingApp.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.Job", b =>
-                {
-                    b.HasOne("JobTrackingApp.Models.Company", "Company")
-                        .WithMany("Jobs")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("JobTrackingApp.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("JobTrackingApp.Models.JobContact", b =>
-                {
-                    b.HasOne("JobTrackingApp.Models.Contact", "Contact")
-                        .WithMany("JobContacts")
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("JobTrackingApp.Models.Job", "Job")
-                        .WithMany("JobContacts")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("JobTrackingApp.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
