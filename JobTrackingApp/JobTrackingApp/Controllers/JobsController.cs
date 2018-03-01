@@ -8,35 +8,30 @@ using Microsoft.EntityFrameworkCore;
 using JobTrackingApp.Data;
 using JobTrackingApp.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 
 namespace JobTrackingApp.Controllers
 {
-    public class CompaniesController : Controller
+    public class JobsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public CompaniesController(ApplicationDbContext context, UserManager<ApplicationUser> UserManager)
+        public JobsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
-            _userManager = UserManager;
+            _userManager = userManager;
         }
-
-        // Get current user
 
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
-        // GET: Companies
-        [Authorize]
+        // GET: Jobs
         public async Task<IActionResult> Index()
         {
-
-            return View(await _context.Company.ToListAsync());
+            var applicationDbContext = _context.Job.Include(j => j.Company);
+            return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Companies/Details/5
-        [Authorize]
+        // GET: Jobs/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -44,41 +39,45 @@ namespace JobTrackingApp.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Company
-                .SingleOrDefaultAsync(m => m.CompanyId == id);
-            if (company == null)
+            var job = await _context.Job
+                .Include(j => j.Company)
+                .SingleOrDefaultAsync(m => m.JobId == id);
+            if (job == null)
             {
                 return NotFound();
             }
 
-            return View(company);
+            return View(job);
         }
 
-        // GET: Companies/Create
-        [Authorize]
+        // GET: Jobs/Create
         public IActionResult Create()
         {
+            ViewData["CompanyId"] = new SelectList(_context.Company, "CompanyId", "Name");
             return View();
         }
 
-        // POST: Companies/Create
+        // POST: Jobs/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyId,Name,RecruitingCompany,Address,City,State,Phone")] Company company)
+        public async Task<IActionResult> Create([Bind("JobId,Description,DateApplied,CompanyId,Status,Notes")] Job job)
         {
+
+            ModelState.Remove("user");
             if (ModelState.IsValid)
             {
-                _context.Add(company);
+                job.User = await GetCurrentUserAsync();
+                _context.Add(job);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(company);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "CompanyId", "Name", job.CompanyId);
+            return View(job);
         }
 
-        // GET: Companies/Edit/5
-        [Authorize]
+        // GET: Jobs/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,23 +85,23 @@ namespace JobTrackingApp.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Company.SingleOrDefaultAsync(m => m.CompanyId == id);
-            if (company == null)
+            var job = await _context.Job.SingleOrDefaultAsync(m => m.JobId == id);
+            if (job == null)
             {
                 return NotFound();
             }
-            return View(company);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "CompanyId", "Name", job.CompanyId);
+            return View(job);
         }
 
-        // POST: Companies/Edit/5
+        // POST: Jobs/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,Name,RecruitingCompany,Address,City,State,Phone")] Company company)
+        public async Task<IActionResult> Edit(int id, [Bind("JobId,Description,DateApplied,CompanyId,Status,Notes")] Job job)
         {
-            if (id != company.CompanyId)
+            if (id != job.JobId)
             {
                 return NotFound();
             }
@@ -111,12 +110,12 @@ namespace JobTrackingApp.Controllers
             {
                 try
                 {
-                    _context.Update(company);
+                    _context.Update(job);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CompanyExists(company.CompanyId))
+                    if (!JobExists(job.JobId))
                     {
                         return NotFound();
                     }
@@ -127,10 +126,11 @@ namespace JobTrackingApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(company);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "CompanyId", "Name", job.CompanyId);
+            return View(job);
         }
 
-        // GET: Companies/Delete/5
+        // GET: Jobs/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -138,30 +138,31 @@ namespace JobTrackingApp.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Company
-                .SingleOrDefaultAsync(m => m.CompanyId == id);
-            if (company == null)
+            var job = await _context.Job
+                .Include(j => j.Company)
+                .SingleOrDefaultAsync(m => m.JobId == id);
+            if (job == null)
             {
                 return NotFound();
             }
 
-            return View(company);
+            return View(job);
         }
 
-        // POST: Companies/Delete/5
+        // POST: Jobs/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var company = await _context.Company.SingleOrDefaultAsync(m => m.CompanyId == id);
-            _context.Company.Remove(company);
+            var job = await _context.Job.SingleOrDefaultAsync(m => m.JobId == id);
+            _context.Job.Remove(job);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CompanyExists(int id)
+        private bool JobExists(int id)
         {
-            return _context.Company.Any(e => e.CompanyId == id);
+            return _context.Job.Any(e => e.JobId == id);
         }
     }
 }

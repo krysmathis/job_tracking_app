@@ -16,6 +16,7 @@ namespace JobTrackingApp.Models
         public string Description { get; set; }
 
         [Required]
+        [DataType(DataType.Date)]
         public DateTime DateApplied { get; set; }
 
         [Required]

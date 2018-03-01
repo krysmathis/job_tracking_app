@@ -14,6 +14,9 @@ namespace JobTrackingApp.Models
         [Required]
         public string Name { get; set; }
 
+        [Required]
+        public ApplicationUser User { get; set; }
+
         public bool RecruitingCompany { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
